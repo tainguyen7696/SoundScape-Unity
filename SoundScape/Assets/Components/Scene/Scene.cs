@@ -1,3 +1,4 @@
+using Postgrest;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,18 +12,25 @@ public class Scene : Singleton<Scene>
 
     private readonly List<SceneItem> slots = new List<SceneItem>();
 
-    public event Action<int> OnSceneChanged;
+    public event Action<List<SceneItem>> OnSceneChanged;
+
+    public void LoadPersistedScene()
+    {
+        foreach (var soundData in PersistentDataManager.Instance.persistentScene)
+        {
+            AddSound(soundData);
+        }
+    }
 
     public void AddSound(SoundData data)
     {
         if (slots.Count < 3)
         {
-            var go = Instantiate(sceneItemPrefab.gameObject, container);
-            var item = go.GetComponent<SceneItem>();
+            var item = Instantiate(sceneItemPrefab, container);
             slots.Add(item);
             item.Download(data);
             item.OnRemove += RemoveSound;
-            OnSceneChanged?.Invoke(Count);
+            OnSceneChanged?.Invoke(slots);
         }
         else
         {
@@ -41,15 +49,17 @@ public class Scene : Singleton<Scene>
         var item = slots[slots.Count - 1];
         item.Download(data);
         item.gameObject.SetActive(true);
+        OnSceneChanged?.Invoke(slots);
     }
 
-    public void RemoveSound(int index)
+    public void RemoveSound(SceneItem item)
     {
-        if (index < 0 || index >= slots.Count) return;
-        var slot = slots[index];
-        Destroy(slot.gameObject);
-        slots.RemoveAt(index);
-        OnSceneChanged?.Invoke(Count);
+        if (slots.Contains(item))
+        {
+            slots.Remove(item);
+            Destroy(item.gameObject);
+        }
+        OnSceneChanged?.Invoke(slots);
     }
 
     public void ClearScene()
@@ -57,6 +67,6 @@ public class Scene : Singleton<Scene>
         foreach (var slot in slots)
             Destroy(slot.gameObject);
         slots.Clear();
-        OnSceneChanged?.Invoke(Count);
+        OnSceneChanged?.Invoke(slots);
     }
 }

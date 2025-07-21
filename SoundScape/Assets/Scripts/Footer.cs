@@ -1,3 +1,5 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Footer : MonoBehaviour
@@ -8,7 +10,6 @@ public class Footer : MonoBehaviour
     private void OnEnable()
     {
         scene.OnSceneChanged += UpdateVisibility;
-        UpdateVisibility(scene.Count);
     }
 
     private void OnDisable()
@@ -16,9 +17,9 @@ public class Footer : MonoBehaviour
         scene.OnSceneChanged -= UpdateVisibility;
     }
 
-    private void UpdateVisibility(int count)
+    private void UpdateVisibility(List<SceneItem> sceneItems)
     {
-        bool hasItems = count > 0;
+        bool hasItems = sceneItems.Count > 0;
         float alpha = hasItems ? 1F : 0F;
 
         canvasGroup.FadeTo(alpha, 0.3F, hasItems, hasItems);

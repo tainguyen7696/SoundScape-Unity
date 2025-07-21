@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.U2D;
 using UnityEngine.UI;
 
 public class SceneItem : MonoBehaviour
@@ -9,22 +10,32 @@ public class SceneItem : MonoBehaviour
     private SoundData data;
     [SerializeField] private LayoutElement layoutElement;
     [SerializeField] private Image backgroundImage;
-    public Action<int> OnRemove;
+    public Action<SceneItem> OnRemove;
 
     public void Download(SoundData data)
     {
-        backgroundImage.overrideSprite = data.backgroundImage;
+        this.data = data;
         backgroundImage.type = Image.Type.Simple;
         backgroundImage.preserveAspect = true;
 
-        // 4) Fit to full width, then recalc height to maintain original aspect
-        RectTransform rt = backgroundImage.rectTransform;
-        float targetWidth = rt.rect.width;
-        float newHeight = targetWidth * ((float)data.backgroundImage.textureRect.height / data.backgroundImage.textureRect.width);
-        rt.SetSizeWithCurrentAnchors(
-            RectTransform.Axis.Vertical,
-            newHeight
-        );
+        if (data.backgroundImage != null)
+        {
+            backgroundImage.overrideSprite = data.backgroundImage;
+            backgroundImage.enabled = true;
+        }
+        else
+        {
+            ImageExtensions.LoadSpriteFromURL(data.backgroundImageUrl, downloadedSprite =>
+            {
+                if (downloadedSprite != null)
+                {
+                    backgroundImage.overrideSprite = downloadedSprite;
+
+                    backgroundImage.enabled = true;
+                    data.backgroundImage = downloadedSprite;
+                }
+            });
+        }
     }
 
     public void HandleOnClick()
@@ -34,6 +45,6 @@ public class SceneItem : MonoBehaviour
 
     public void HandleOnRemove()
     {
-        OnRemove?.Invoke(transform.GetSiblingIndex());
+        OnRemove?.Invoke(this);
     }
 }

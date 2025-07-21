@@ -1,17 +1,29 @@
 using System;
 using System.Collections;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.U2D;
+using UnityEngine.UI;
 
 public class SoundCard : MonoBehaviour
 {
     public SoundData SoundData => data;
     public bool IsOn => isOn;
     public bool IsFavorite => isFavorite;
+    public bool Outline
+    {
+        set
+        {
+            outline.enabled = value;
+        }
+    }
 
-    [SerializeField] private UnityEngine.UI.Image backgroundImage;
+    [SerializeField] private Image backgroundImage;
     [SerializeField] private TextMeshProUGUI title;
-    [SerializeField] private UnityEngine.UI.Image isPremiumIcon;
+    [SerializeField] private Image isPremiumIcon;
+    [SerializeField] private Image outline;
+    [SerializeField] private Toggle favoriteToggle;
 
     public Action<bool> OnFavoritesChanged;
     public Action<SoundData> OnAdd;
@@ -28,42 +40,36 @@ public class SoundCard : MonoBehaviour
 
         isPremiumIcon.gameObject.SetActive(data.isPremium);
 
-        // if we already have a sprite, use it immediately
-        if (data.backgroundImage != null)
+        if(data.backgroundImage != null)
         {
             backgroundImage.overrideSprite = data.backgroundImage;
+            backgroundImage.enabled = true;
         }
-        // otherwise download it, then assign to both the Image and the SoundData
-        else if (!string.IsNullOrEmpty(data.backgroundImageUrl))
+        else
         {
-            ImageExtensions.LoadSpriteFromURL(data.backgroundImageUrl, sprite =>
+            ImageExtensions.LoadSpriteFromURL(data.backgroundImageUrl, downloadedSprite =>
             {
-                if (sprite != null)
+                if (downloadedSprite != null)
                 {
-                    backgroundImage.overrideSprite = sprite;
-
-                    backgroundImage.overrideSprite = sprite;
-                    backgroundImage.type = UnityEngine.UI.Image.Type.Simple;
-                    backgroundImage.preserveAspect = true;
-
-                    // 4) Fit to full width, then recalc height to maintain original aspect
-                    RectTransform rt = backgroundImage.rectTransform;
-                    float targetWidth = rt.rect.width;
-                    float newHeight = targetWidth * ((float)sprite.textureRect.height / sprite.textureRect.width);
-                    rt.SetSizeWithCurrentAnchors(
-                        RectTransform.Axis.Vertical,
-                        newHeight
-                    );
-
-                    data.backgroundImage = sprite;
+                    backgroundImage.overrideSprite = downloadedSprite;
+                    backgroundImage.enabled = true;
+                    data.backgroundImage = downloadedSprite;
                 }
             });
         }
+
+        bool isFavorited = PersistentDataManager.Instance.Favorites.Any(x => x == data.title);
+        favoriteToggle.SetIsOnWithoutNotify(isFavorited);
+        this.isFavorite = isFavorited;
     }
 
     public void HandleOnFavoritesChange(bool isOn)
     {
         OnFavoritesChanged?.Invoke(isOn);
+        if (isOn)
+            PersistentDataManager.Instance.AddFavorite(data.title);
+        else
+            PersistentDataManager.Instance.RemoveFavorite(data.title);
         isFavorite = isOn;
     }
     public void HandleOnAdd()

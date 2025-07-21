@@ -5,10 +5,51 @@ using UnityEngine;
 
 public class Categories : Factory<Category>
 {
-    [SerializeField] private Scene scene;
-    public void Start()
+
+    public void Awake()
+    {
+        SoundDataManager.Instance.OnSoundDataJsonLoaded += Instance_OnSoundDataJsonLoaded;
+        Scene.Instance.OnSceneChanged += Instance_OnSceneChanged;
+    }
+
+    private void Instance_OnSoundDataJsonLoaded(List<SoundData> obj)
     {
         Download();
+    }
+
+    private void OnDestroy()
+    {
+        if (Scene.Instance != null)
+            Scene.Instance.OnSceneChanged -= Instance_OnSceneChanged;
+    }
+
+    private void Instance_OnSceneChanged(List<SceneItem> sceneItems)
+    {
+        // 1) Disable all outlines
+        foreach (var category in Objs)
+        {
+            foreach (SoundCard card in category.Objs)
+            {
+                card.Outline = false;
+            }
+        }
+
+        foreach (var item in sceneItems)
+        {
+            string title = item.SoundData.title;
+
+            foreach (var category in Objs)
+            {
+                var soundCard = category.Objs
+                    .FirstOrDefault(x => x.SoundData.title.ToLowerInvariant() == title.ToLowerInvariant());
+
+                if (soundCard != null)
+                {
+                    soundCard.Outline = true;
+                    break;
+                }
+            }
+        }
     }
 
     public void Download()
@@ -23,16 +64,28 @@ public class Categories : Factory<Category>
 
         foreach (var group in groups)
         {
-            Category category = Create();
+            Category category = CreateOrGet(group.Key);
             category.name = group.Key;
             category.Title = group.Key;
             foreach (var soundData in group)
             {
-                SoundCard card = category.Create();
-                card.Download(soundData);
-                card.OnToggle += scene.ReplaceSound;
-                card.OnAdd += scene.AddSound;
+                SoundCard card = category.CreateOrGet(soundData);
+                card.OnToggle = null;
+                card.OnAdd = null;
+                card.OnToggle += Scene.Instance.ReplaceSound;
+                card.OnAdd += Scene.Instance.AddSound;
             }
         }
+    }
+
+    public Category CreateOrGet(string title)
+    {
+        var obj = Objs.FirstOrDefault(x => x.Title == title);
+        if (obj == null)
+        {
+            obj = Create();
+            obj.Title = title;
+        }
+        return obj;
     }
 }

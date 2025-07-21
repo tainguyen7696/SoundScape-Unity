@@ -436,7 +436,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 6896712438473114667}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
@@ -676,6 +676,7 @@ GameObject:
   - component: {fileID: 3033999145038137758}
   - component: {fileID: 8998963808861566491}
   - component: {fileID: 2944370376093513597}
+  - component: {fileID: 5463935592004867492}
   m_Layer: 5
   m_Name: background image
   m_TagString: Untagged
@@ -717,7 +718,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8387986256120393061}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -730,13 +731,27 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -994213752922525001, guid: 14e0b21c1132c2148874177aee71aae6, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
-  m_UseSpriteMesh: 0
+  m_UseSpriteMesh: 1
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5463935592004867492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8387986256120393061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AspectMode: 1
+  m_AspectRatio: 1.7777778
