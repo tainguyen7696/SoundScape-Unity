@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System;
 
 /// <summary>
 /// Handles showing/hiding a pull-up panel by animating its RectTransform vertically,
@@ -26,6 +27,8 @@ public class Pullup : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
     private Vector2 dragStartLocalPos;
     private float startHeight;
 
+    public event EventHandler OnClosed;
+
     private void Awake()
     {
         // Start closed
@@ -44,6 +47,9 @@ public class Pullup : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
         StopAllCoroutines();
         StartCoroutine(AnimatePullup(open));
         SetActiveBlocker(open);
+
+        if(!open)
+        OnClosed?.Invoke(this, null);
     }
 
     /// <summary>
