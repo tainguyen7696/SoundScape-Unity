@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -22,6 +23,11 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    public AudioSource GetAudioSourceAt(int layerIndex)
+    {
+        return layerSources.ElementAt(layerIndex);
+    }
+
     /// <summary>
     /// Start looping this clip on the specified layer (0‑2). Replaces any previous clip on that layer.
     /// </summary>
@@ -29,16 +35,17 @@ public class AudioManager : MonoBehaviour
     {
         if (layerIndex < 0 || layerIndex >= layerSources.Count) return;
         var src = layerSources[layerIndex];
+
         src.clip = clip;
+
         src.Play();
     }
 
-    public void ResetClips()
+    public void ClearClipAt(int layerIndex)
     {
-        foreach (var layerSource in layerSources)
-        {
+        var layerSource = layerSources.ElementAt(layerIndex);
+        if (layerSource != null)
             layerSource.clip = null;
-        }
     }
 
     /// <summary>
@@ -47,7 +54,8 @@ public class AudioManager : MonoBehaviour
     public void StopLayer(int layerIndex)
     {
         if (layerIndex < 0 || layerIndex >= layerSources.Count) return;
-        layerSources[layerIndex].Stop();
+        if (layerSources[layerIndex].isPlaying)
+            layerSources[layerIndex].Stop();
     }
 
     /// <summary>

@@ -6,9 +6,10 @@ using UnityEngine.UI;
 
 public class SceneItem : MonoBehaviour
 {
-    public int LayerIndex {
+    public int LayerIndex
+    {
         get => layerIndex;
-        set => layerIndex = value; 
+        set => layerIndex = value;
     }
     public AudioClip AudioClip => audioClip;
     public SoundData SoundData => data;
@@ -74,5 +75,6 @@ public class SceneItem : MonoBehaviour
     public void HandleOnRemove()
     {
         OnRemove?.Invoke(this);
+        AudioManager.Instance.ClearClipAt(layerIndex);
     }
 }

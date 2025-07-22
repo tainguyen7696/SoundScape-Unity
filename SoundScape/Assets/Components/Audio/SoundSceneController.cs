@@ -38,23 +38,30 @@ public class SoundSceneController : Singleton<SoundSceneController>
     {
         if (items.Count == 0)
             isPlaying = false;
-        AudioManager.Instance.ResetClips();
         try
         {
+            for (int i = 0; i < 3; i++)
+            {
+                if (i < items.Count)
+                {
+                    if (items[i].AudioClip == null)
+                    {
+                        var (clip, bytes) = await AudioExtensions.GetAudioClipWithBytesFromUrlAsync(items[i].SoundData.audioUrl);
+                        AudioManager.Instance.PlayLayer(items[i].LayerIndex, clip);
+                    }
+                    else
+                    {
+                        AudioManager.Instance.PlayLayer(items[i].LayerIndex, items[i].AudioClip);
+                    }
+
+                    AudioManager.Instance.SetLayerVolume(items[i].LayerIndex, items[i].SoundData.settings.volume);
+                    AudioManager.Instance.SetLayerWarmth(items[i].LayerIndex, items[i].SoundData.settings.warmth);
+                }
+            }
+
             foreach (var item in items)
             {
-                if (item.AudioClip == null)
-                {
-                    var (clip, bytes) = await AudioExtensions.GetAudioClipWithBytesFromUrlAsync(item.SoundData.audioUrl);
-                    AudioManager.Instance.PlayLayer(item.LayerIndex, clip);
-                }
-                else
-                {
-                    AudioManager.Instance.PlayLayer(item.LayerIndex, item.AudioClip);
-                }
 
-                AudioManager.Instance.SetLayerVolume(item.LayerIndex, item.SoundData.settings.volume);
-                AudioManager.Instance.SetLayerWarmth(item.LayerIndex, item.SoundData.settings.warmth);
             }
         }
         catch { }
