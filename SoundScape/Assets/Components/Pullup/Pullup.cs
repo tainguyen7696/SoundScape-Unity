@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections;
 using System;
+using TMPro;
 
 /// <summary>
 /// Handles showing/hiding a pull-up panel by animating its RectTransform vertically,
@@ -9,9 +10,15 @@ using System;
 /// </summary>
 public class Pullup : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
+    public string Title
+    {
+        get => titleText.text;
+        set => titleText.text = value;
+    }
     [Header("UI References")]
     [SerializeField] private RectTransform pullupRectTransform;
     [SerializeField] private CanvasGroup blockerCanvasGroup;
+    [SerializeField] private TextMeshProUGUI titleText;
 
     [Header("Animation Settings")]
     [Tooltip("Duration of the pull-up animation in seconds.")]
@@ -48,8 +55,8 @@ public class Pullup : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
         StartCoroutine(AnimatePullup(open));
         SetActiveBlocker(open);
 
-        if(!open)
-        OnClosed?.Invoke(this, null);
+        if (!open)
+            OnClosed?.Invoke(this, null);
     }
 
     /// <summary>

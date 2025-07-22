@@ -620,6 +620,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pullupRectTransform: {fileID: 5533233996707928487}
   blockerCanvasGroup: {fileID: 216748843041610668}
+  titleText: {fileID: 3148964571130833741}
   animationDuration: 0.2
   targetHeight: 500
   closeThreshold: 0.6

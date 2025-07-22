@@ -21,7 +21,7 @@ public class SceneItem : MonoBehaviour
     private int layerIndex;
     private AudioClip audioClip;
 
-    public void Download(SoundData data)
+    public async void Download(SoundData data)
     {
         this.data = data;
         backgroundImage.type = Image.Type.Simple;
@@ -52,7 +52,7 @@ public class SceneItem : MonoBehaviour
         }
         else
         {
-            var (clip, bytes) = AudioExtensions.GetAudioClipWithBytesFromUrl(data.audioUrl);
+            var (clip, bytes) = await AudioExtensions.GetAudioClipWithBytesFromUrlAsync(data.audioUrl);
 
             if (clip != null && bytes != null)
             {

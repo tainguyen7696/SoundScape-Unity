@@ -41,8 +41,9 @@ public class SoundDataManager : Singleton<SoundDataManager>
     string _audioFolder;
     List<SoundData> _soundDatas = new List<SoundData>();
 
-    async void Awake()
+    public override async void Awake()
     {
+        base.Awake();
         // prepare paths
         _filePath = Path.Combine(Application.persistentDataPath, FileName);
         _audioFolder = Path.Combine(Application.persistentDataPath, AudioSubdir);
@@ -156,7 +157,7 @@ public class SoundDataManager : Singleton<SoundDataManager>
             _soundDatas = JsonConvert.DeserializeObject<List<SoundData>>(json)
                          ?? new List<SoundData>();
 
-            Debug.Log($"✅ Loaded {_soundDatas.Count} sounds from local cache.");
+            Debug.Log($"✅ Loaded {_soundDatas.Count} soundDatas from local cache.");
             OnSoundDataJsonLoaded?.Invoke(_soundDatas);
             await LoadSpritesAndCacheAsync(_soundDatas);
             OnSoundDataImageLoaded?.Invoke(_soundDatas);
@@ -232,8 +233,10 @@ public class SoundDataManager : Singleton<SoundDataManager>
                 }
             }
         }
-
-        Debug.Log("🔄 Sprites loaded and cached.");
+        foreach (var sd in list)
+        {
+            Debug.Log($"CACHED: SoundData sprite '{sd.title}': backgroundImagePath = '{sd.backgroundImagePath}'");
+        }
         // update JSON with new backgroundImagePath values
         SaveJsonCache(list);
     }
@@ -249,40 +252,37 @@ public class SoundDataManager : Singleton<SoundDataManager>
             string fname = $"{safeName}{ext}";
             string fullPath = Path.Combine(_audioFolder, fname);
 
-            if (File.Exists(fullPath))
+            // 1) Try disk first
+            var clip = await AudioExtensions.GetAudioFromDiskAsync(fullPath);
+            if (clip != null)
             {
-                // load from disk
-                using var www = UnityWebRequestMultimedia.GetAudioClip(
-                    "file://" + fullPath,
-                    GetAudioType(ext)
-                );
-                await www.SendWebRequest();
-                if (www.result == UnityWebRequest.Result.Success)
-                    sd.audioClip = DownloadHandlerAudioClip.GetContent(www);
-                else
-                    Debug.LogError($"❌ Cached audio load failed: {www.error}");
+                sd.audioClip = clip;
+                sd.audioClipPath = Path.Combine(AudioSubdir, fname);
             }
             else
             {
-                var (clip, bytes) = AudioExtensions.GetAudioClipWithBytesFromUrl(sd.audioUrl);
+                // 2) Fallback to remote download
+                var (downloadedClip, bytes) = await AudioExtensions
+                                                 .GetAudioClipWithBytesFromUrlAsync(sd.audioUrl);
 
-                if (clip != null && bytes != null)
+                if (downloadedClip != null && bytes != null)
                 {
-                    sd.audioClip = clip;
+                    sd.audioClip = downloadedClip;
                     sd.audioClipPath = Path.Combine(AudioSubdir, fname);
-                    File.WriteAllBytes(fullPath, bytes);
                     anyNew = true;
+
+                    // write file off the main thread
+                    await UniTask.Run(() => File.WriteAllBytes(fullPath, bytes));
                 }
                 else
                 {
                     Debug.LogError($"❌ Audio download failed: {sd.audioUrl}");
                 }
             }
+
+            Debug.Log($"CACHED: SoundData audio '{sd.title}': audioClipPath = '{sd.audioClipPath}'");
         }
 
-        Debug.Log("🔊 Audio clips loaded and cached.");
-
-        // If any new clips were downloaded, re‑write JSON to persist their paths
         if (anyNew)
             SaveJsonCache(list);
     }

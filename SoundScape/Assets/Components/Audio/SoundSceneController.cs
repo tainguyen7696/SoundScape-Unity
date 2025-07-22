@@ -13,8 +13,9 @@ public class SoundSceneController : Singleton<SoundSceneController>
 
     private bool isPlaying = true;
 
-    private void Awake()
+    public override void Awake()
     {
+        base.Awake();
         Scene.Instance.OnSceneChanged += HandleSceneChanged;
     }
 
@@ -33,23 +34,30 @@ public class SoundSceneController : Singleton<SoundSceneController>
     /// <summary>
     /// Called when the scene changes.
     /// </summary>
-    private void HandleSceneChanged(List<SceneItem> items)
+    private async void HandleSceneChanged(List<SceneItem> items)
     {
         if (items.Count == 0)
             isPlaying = false;
         AudioManager.Instance.ResetClips();
-        foreach (var item in items)
+        try
         {
-            if (item.AudioClip == null)
+            foreach (var item in items)
             {
-                var (clip, bytes) = AudioExtensions.GetAudioClipWithBytesFromUrl(item.SoundData.audioUrl);
-                AudioManager.Instance.PlayLayer(item.LayerIndex, clip);
-            }
-            else
-            {
-                AudioManager.Instance.PlayLayer(item.LayerIndex, item.AudioClip);
+                if (item.AudioClip == null)
+                {
+                    var (clip, bytes) = await AudioExtensions.GetAudioClipWithBytesFromUrlAsync(item.SoundData.audioUrl);
+                    AudioManager.Instance.PlayLayer(item.LayerIndex, clip);
+                }
+                else
+                {
+                    AudioManager.Instance.PlayLayer(item.LayerIndex, item.AudioClip);
+                }
+
+                AudioManager.Instance.SetLayerVolume(item.LayerIndex, item.SoundData.settings.volume);
+                AudioManager.Instance.SetLayerWarmth(item.LayerIndex, item.SoundData.settings.warmth);
             }
         }
+        catch { }
 
         if (!isPlaying)
             AudioManager.Instance.Pause();

@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ public class SoundSettingsPullup : Singleton<SoundSettingsPullup>
     public void Download(SceneItem sceneItem)
     {
         this.sceneItem = sceneItem;
+        pullup.Title = sceneItem.SoundData.title;
         volumeSlider.value = sceneItem.SoundData.settings.volume;
         warmthSlider.value = sceneItem.SoundData.settings.warmth;
     }
@@ -22,7 +24,7 @@ public class SoundSettingsPullup : Singleton<SoundSettingsPullup>
     public void OnVolumeSliderChange(float value)
     {
         sceneItem.SoundData.settings.volume = value;
-        SoundSceneController.Instance.SetLayerVolume(sceneItem.LayerIndex,value);
+        SoundSceneController.Instance.SetLayerVolume(sceneItem.LayerIndex, value);
         SoundDataManager.Instance.SaveSingleCache(sceneItem.SoundData);
     }
     public void OnWarmthSliderChange(float value)

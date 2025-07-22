@@ -14,8 +14,9 @@ public class SupabaseManager : Singleton<SupabaseManager>
 
     public static Supabase.Client Client { get; private set; }
 
-    async void Awake()
+    public override async void Awake()
     {
+        base.Awake();
         var options = new SupabaseOptions
         {
             AutoRefreshToken    = true,

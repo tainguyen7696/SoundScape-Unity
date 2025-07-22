@@ -2,50 +2,62 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
+using Cysharp.Threading.Tasks;
 
 public static class AudioExtensions
 {
     /// <summary>
-    /// Synchronously downloads an AudioClip and its raw bytes from the given URL (HTTP or file://).
-    /// Blocks the main thread until the download completes—use with caution.
+    /// Attempts to load an AudioClip from a local file on disk.
+    /// Returns null if the file doesn't exist or fails to load.
+    /// Decoding is streamed off the main thread.
     /// </summary>
-    /// <param name="url">HTTP or file:// URL to fetch.</param>
-    /// <returns>
-    /// A ValueTuple where
-    ///  - .clip is the downloaded AudioClip (or null on error)
-    ///  - .data is the raw byte[] that was downloaded (or null on error)
-    /// </returns>
-    public static (AudioClip clip, byte[] data) GetAudioClipWithBytesFromUrl(string url)
+    /// <param name="fullPath">Absolute path on disk (no "file://" prefix)</param>
+    public static async UniTask<AudioClip> GetAudioFromDiskAsync(string fullPath)
     {
-        // Determine format by extension
-        string ext = Path.GetExtension(url).ToLower();
+        if (!File.Exists(fullPath))
+            return null;
+
+        string fileUri = "file://" + fullPath;
+        string ext = Path.GetExtension(fullPath).ToLower();
         AudioType type = GetAudioType(ext);
-        byte[] bytes = null;
-        AudioClip clip = null;
 
-        using (var uwr = UnityWebRequestMultimedia.GetAudioClip(url, type))
+        using var uwr = new UnityWebRequest(fileUri, UnityWebRequest.kHttpVerbGET);
+        var dh = new DownloadHandlerAudioClip(fileUri, type);
+        dh.streamAudio = true;
+        uwr.downloadHandler = dh;
+
+        await uwr.SendWebRequest();
+        if (uwr.result != UnityWebRequest.Result.Success)
         {
-            var req = uwr.SendWebRequest();
-            // BLOCKING wait
-            while (!req.isDone) { }
-
-#if UNITY_2020_1_OR_NEWER
-            if (uwr.result != UnityWebRequest.Result.Success)
-#else
-            if (uwr.isNetworkError || uwr.isHttpError)
-#endif
-            {
-                Debug.LogError($"AudioExtensions: failed to load clip from {url}: {uwr.error}");
-                return (null, null);
-            }
-
-            // grab raw bytes
-            bytes = uwr.downloadHandler.data;
-            // convert to AudioClip
-            clip = DownloadHandlerAudioClip.GetContent(uwr);
+            Debug.LogError($"AudioExtensions: failed to load from disk '{fullPath}': {uwr.error}");
+            return null;
         }
 
-        return (clip, bytes);
+        return dh.audioClip;
+    }
+
+    /// <summary>
+    /// Asynchronously downloads an AudioClip + raw bytes from the given URL,
+    /// streaming & decoding in the background.
+    /// </summary>
+    public static async UniTask<(AudioClip clip, byte[] data)> GetAudioClipWithBytesFromUrlAsync(string url)
+    {
+        string ext = Path.GetExtension(url).ToLower();
+        AudioType type = GetAudioType(ext);
+
+        using var uwr = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
+        var dh = new DownloadHandlerAudioClip(url, type);
+        dh.streamAudio = true;
+        uwr.downloadHandler = dh;
+
+        await uwr.SendWebRequest();
+        if (uwr.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError($"AudioExtensions: failed to download '{url}': {uwr.error}");
+            return (null, null);
+        }
+
+        return (dh.audioClip, uwr.downloadHandler.data);
     }
 
     private static AudioType GetAudioType(string ext) => ext switch

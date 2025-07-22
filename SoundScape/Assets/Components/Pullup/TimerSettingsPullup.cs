@@ -41,7 +41,6 @@ public class TimerSettingsPullup : Singleton<TimerSettingsPullup>
             isRunning = false;
         }
 
-        Debug.Log(remainingSeconds);
         // broadcast time
         OnTimerTick?.Invoke(TimeSpan.FromSeconds(remainingSeconds));
 
