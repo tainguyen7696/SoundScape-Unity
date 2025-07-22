@@ -38,10 +38,10 @@ public class TimerSettingsPullup : Singleton<TimerSettingsPullup>
         {
             remainingSeconds = 0f;
             OnTimerComplete?.Invoke();
-            Debug.Log(remainingSeconds);
             isRunning = false;
         }
 
+        Debug.Log(remainingSeconds);
         // broadcast time
         OnTimerTick?.Invoke(TimeSpan.FromSeconds(remainingSeconds));
 
@@ -59,6 +59,7 @@ public class TimerSettingsPullup : Singleton<TimerSettingsPullup>
     public void OnSliderValueChanged(float value)
     {
         ResetTimer();
+        isRunning = true;
         minutes = Mathf.RoundToInt(value);
         UpdateCountdownUI();
     }

@@ -9,6 +9,8 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using Postgrest.Models;
 using Postgrest.Attributes;
+using UnityEngine.Networking;
+using UnityEngine.U2D.Animation;
 
 [Table("sounds")]
 public class Sounds : BaseModel
@@ -26,33 +28,78 @@ public class Sounds : BaseModel
 public class SoundDataManager : Singleton<SoundDataManager>
 {
     public event Action<List<SoundData>> OnSoundDataImageLoaded;
+    public event Action<List<SoundData>> OnSoundDataAudioClipLoaded;
     public event Action<List<SoundData>> OnSoundDataJsonLoaded;
     public IReadOnlyList<SoundData> SoundDatas => _soundDatas;
 
     const string FileName = "sound_data.json";
-    const string SpritesSubdir = "sound_sprites";
+    const string AudioSubdir = "sound_audio";
+    const string SpritesDir = "sound_sprites";
 
     string _filePath;
     string _spritesFolder;
+    string _audioFolder;
     List<SoundData> _soundDatas = new List<SoundData>();
 
     async void Awake()
     {
         // prepare paths
         _filePath = Path.Combine(Application.persistentDataPath, FileName);
-        _spritesFolder = Path.Combine(Application.persistentDataPath, SpritesSubdir);
-        if (!Directory.Exists(_spritesFolder))
-            Directory.CreateDirectory(_spritesFolder);
+        _audioFolder = Path.Combine(Application.persistentDataPath, AudioSubdir);
+        _spritesFolder = Path.Combine(Application.persistentDataPath, SpritesDir);
 
-        if (File.Exists(_filePath))
-        {
-            await LoadLocalAsync();
-        }
-        else
+        Directory.CreateDirectory(_audioFolder);
+        Directory.CreateDirectory(_spritesFolder);
+
+        await CheckCacheThenLoadAsync();
+    }
+
+    private async UniTask CheckCacheThenLoadAsync()
+    {
+        // 1) If no local file, just refresh
+        if (!File.Exists(_filePath))
         {
             await RefreshFromRemoteAsync();
+            return;
         }
+
+        // 2) Read local count
+        List<SoundData> localList;
+        try
+        {
+            var json = File.ReadAllText(_filePath);
+            localList = JsonConvert.DeserializeObject<List<SoundData>>(json)
+                        ?? new List<SoundData>();
+        }
+        catch
+        {
+            // corrupt local – force refresh
+            await RefreshFromRemoteAsync();
+            return;
+        }
+
+        // 3) Fetch remote count
+        //    (we fetch metadata only; Supabase will still return the models)
+        while (SupabaseManager.Client == null)
+            await UniTask.Yield();
+
+        var resp = await SupabaseManager.Client
+                                    .From<Sounds>()
+                                    .Select("title")
+                                    .Get();
+        int remoteCount = resp.Models?.Count ?? 0;
+
+        // 4) Compare and load accordingly
+        if (localList.Count == remoteCount)
+            await LoadLocalAsync();
+        else
+            await RefreshFromRemoteAsync();
     }
+
+    public void SaveSingleCache(SoundData item)
+        => SaveSelectedCache(new[] { item });
+    public void SaveSelectedCache(IEnumerable<SoundData> subset)
+        => SaveJsonCache(subset.ToList());
 
     /// <summary>
     /// Force a fresh download from Supabase, overwriting cache.
@@ -87,6 +134,9 @@ public class SoundDataManager : Singleton<SoundDataManager>
             await LoadSpritesAndCacheAsync(list);
             OnSoundDataImageLoaded?.Invoke(_soundDatas);
 
+            await LoadAudioClipsAndCacheAsync(_soundDatas);
+            OnSoundDataAudioClipLoaded?.Invoke(_soundDatas);
+
             SaveJsonCache(_soundDatas);
         }
         catch (Exception ex)
@@ -110,6 +160,8 @@ public class SoundDataManager : Singleton<SoundDataManager>
             OnSoundDataJsonLoaded?.Invoke(_soundDatas);
             await LoadSpritesAndCacheAsync(_soundDatas);
             OnSoundDataImageLoaded?.Invoke(_soundDatas);
+            await LoadAudioClipsAndCacheAsync(_soundDatas);
+            OnSoundDataAudioClipLoaded?.Invoke(_soundDatas);
         }
         catch (Exception ex)
         {
@@ -186,6 +238,66 @@ public class SoundDataManager : Singleton<SoundDataManager>
         SaveJsonCache(list);
     }
 
+    private async UniTask LoadAudioClipsAndCacheAsync(List<SoundData> list)
+    {
+        bool anyNew = false;
+
+        foreach (var sd in list)
+        {
+            string safeName = string.Concat(sd.title.Split(Path.GetInvalidFileNameChars()));
+            string ext = Path.GetExtension(sd.audioUrl).ToLower();
+            string fname = $"{safeName}{ext}";
+            string fullPath = Path.Combine(_audioFolder, fname);
+
+            if (File.Exists(fullPath))
+            {
+                // load from disk
+                using var www = UnityWebRequestMultimedia.GetAudioClip(
+                    "file://" + fullPath,
+                    GetAudioType(ext)
+                );
+                await www.SendWebRequest();
+                if (www.result == UnityWebRequest.Result.Success)
+                    sd.audioClip = DownloadHandlerAudioClip.GetContent(www);
+                else
+                    Debug.LogError($"❌ Cached audio load failed: {www.error}");
+            }
+            else
+            {
+                var (clip, bytes) = AudioExtensions.GetAudioClipWithBytesFromUrl(sd.audioUrl);
+
+                if (clip != null && bytes != null)
+                {
+                    sd.audioClip = clip;
+                    sd.audioClipPath = Path.Combine(AudioSubdir, fname);
+                    File.WriteAllBytes(fullPath, bytes);
+                    anyNew = true;
+                }
+                else
+                {
+                    Debug.LogError($"❌ Audio download failed: {sd.audioUrl}");
+                }
+            }
+        }
+
+        Debug.Log("🔊 Audio clips loaded and cached.");
+
+        // If any new clips were downloaded, re‑write JSON to persist their paths
+        if (anyNew)
+            SaveJsonCache(list);
+    }
+
+    private AudioType GetAudioType(string ext)
+    {
+        return ext switch
+        {
+            ".mp3" => AudioType.MPEG,
+            ".mp4" => AudioType.MPEG,
+            ".wav" => AudioType.WAV,
+            ".ogg" => AudioType.OGGVORBIS,
+            _ => AudioType.UNKNOWN,
+        };
+    }
     private UniTask<Sprite> LoadRemoteSpriteAsync(string url)
     {
         var tcs = new UniTaskCompletionSource<Sprite>();
@@ -211,7 +323,7 @@ public class SoundDataManager : Singleton<SoundDataManager>
             var bytes = tex.EncodeToPNG();
             File.WriteAllBytes(full, bytes);
 
-            sd.backgroundImagePath = Path.Combine(SpritesSubdir, fname);
+            sd.backgroundImagePath = Path.Combine(SpritesDir, fname);
         }
         catch (Exception ex)
         {
@@ -220,34 +332,37 @@ public class SoundDataManager : Singleton<SoundDataManager>
     }
 
     /// <summary>
-    /// Deletes the local JSON cache and all cached sprites.
-    /// Call this before testing to force a cold start.
-    /// </summary>
-    public void ClearDiskCache()
+     /// Deletes all on‑disk caches (JSON, sprites, audio) and recreates empty folders.
+     /// </summary>
+    public void ClearAllCache()
     {
-        // 1) delete JSON
+        // 1) Delete JSON cache
         if (File.Exists(_filePath))
         {
             File.Delete(_filePath);
             Debug.Log("🗑️ Deleted JSON cache.");
         }
-        else
-        {
-            Debug.Log("ℹ️ JSON cache not found.");
-        }
 
-        // 2) delete sprites directory
+        // 2) Delete sprite cache
         if (Directory.Exists(_spritesFolder))
         {
             Directory.Delete(_spritesFolder, recursive: true);
-            Debug.Log("🗑️ Deleted sprites cache folder.");
-        }
-        else
-        {
-            Debug.Log("ℹ️ Sprites cache folder not found.");
+            Debug.Log("🗑️ Deleted sprites cache.");
         }
 
-        // 3) recreate empty sprites folder so next load doesn't error
+        // 3) Delete audio cache
+        if (Directory.Exists(_audioFolder))
+        {
+            Directory.Delete(_audioFolder, recursive: true);
+            Debug.Log("🗑️ Deleted audio cache.");
+        }
+
+        // 4) Recreate folders so future loads won’t error
         Directory.CreateDirectory(_spritesFolder);
+        Directory.CreateDirectory(_audioFolder);
+        Debug.Log("✅ Recreated empty cache folders.");
+
+        // 5) Clear in‑memory list if desired
+        _soundDatas.Clear();
     }
 }

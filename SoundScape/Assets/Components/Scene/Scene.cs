@@ -6,6 +6,7 @@ using UnityEngine;
 public class Scene : Singleton<Scene>
 {
     public int Count => slots.Count;
+    public List<SceneItem> SceneItems => slots;
 
     [SerializeField] private SceneItem sceneItemPrefab;
     [SerializeField] private Transform container;
@@ -20,6 +21,7 @@ public class Scene : Singleton<Scene>
         {
             AddSound(soundData);
         }
+        SoundSceneController.Instance.LoadPersistedSound();
     }
 
     public void AddSound(SoundData data)
@@ -28,6 +30,7 @@ public class Scene : Singleton<Scene>
         {
             var item = Instantiate(sceneItemPrefab, container);
             slots.Add(item);
+            item.LayerIndex = slots.Count - 1;
             item.Download(data);
             item.OnRemove += RemoveSound;
             OnSceneChanged?.Invoke(slots);
@@ -36,6 +39,7 @@ public class Scene : Singleton<Scene>
         {
             ReplaceSound(data);
         }
+        SoundSceneController.Instance.HandlePlayPause(true);
     }
 
     public void ReplaceSound(SoundData data)
@@ -50,6 +54,8 @@ public class Scene : Singleton<Scene>
         item.Download(data);
         item.gameObject.SetActive(true);
         OnSceneChanged?.Invoke(slots);
+
+        SoundSceneController.Instance.HandlePlayPause(true);
     }
 
     public void RemoveSound(SceneItem item)
@@ -59,14 +65,6 @@ public class Scene : Singleton<Scene>
             slots.Remove(item);
             Destroy(item.gameObject);
         }
-        OnSceneChanged?.Invoke(slots);
-    }
-
-    public void ClearScene()
-    {
-        foreach (var slot in slots)
-            Destroy(slot.gameObject);
-        slots.Clear();
         OnSceneChanged?.Invoke(slots);
     }
 }
