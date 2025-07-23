@@ -1,6 +1,7 @@
 using Postgrest;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Scene : Singleton<Scene>
@@ -15,7 +16,7 @@ public class Scene : Singleton<Scene>
 
     public event Action<List<SceneItem>> OnSceneChanged;
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         DeleteAllSoundGameObjects();
     }
@@ -49,6 +50,13 @@ public class Scene : Singleton<Scene>
 
     public void ReplaceSound(SoundData data)
     {
+        var alreadySelectedSceneItem = slots.FirstOrDefault(x=>x.SoundData.title == data.title);
+
+        if (alreadySelectedSceneItem != null)
+        {
+            RemoveSound(alreadySelectedSceneItem);
+            return;
+        }
         if (slots.Count == 0)
         {
             AddSound(data);

@@ -36,6 +36,7 @@ public class SoundCard : MonoBehaviour
     public void Download(SoundData data)
     {
         this.data = data;
+        name = data.title;
         title.text = data.title;
 
         isPremiumIcon.gameObject.SetActive(data.isPremium);

@@ -61,47 +61,59 @@ public class AudioManager : MonoBehaviour
     /// <summary>
     /// Set per‑layer volume (0→1 maps to –80dB→0dB).
     /// </summary>
-    public void SetLayerVolume(int layerIndex, float linearVolume)
-    {
-        if (layerIndex < 0 || layerIndex >= layerSources.Count) return;
-        float dB = Mathf.Lerp(-80f, 0f, Mathf.Clamp01(linearVolume));
-        mixer.SetFloat($"Layer{layerIndex + 1}Volume", dB);
-    }
-
-    /// <summary>
-    /// Set per‑layer warmth (0→1 maps to –80dB→0dB).
-    /// </summary>
-    public void SetLayerWarmth(int layerIndex, float linearWarmth)
+    public void SetLayerVolume(int layerIndex, float sliderValue)
     {
         if (layerIndex < 0 || layerIndex >= layerSources.Count)
             return;
 
-        // clamp input
+        float t = Mathf.Clamp01(sliderValue);
+
+        float amplitude = t;
+        float db;
+        if (amplitude <= 0.0001f)
+            db = -80f;
+        else
+            db = 20f * Mathf.Log10(amplitude);
+
+        mixer.SetFloat($"Layer{layerIndex + 1}Volume", db);
+    }
+
+
+/// <summary>
+/// Set per‑layer warmth (0→1 maps to –80dB→0dB).
+/// </summary>
+public void SetLayerWarmth(int layerIndex, float linearWarmth)
+    {
+        if (layerIndex < 0 || layerIndex >= layerSources.Count)
+            return;
+
         float t = Mathf.Clamp01(linearWarmth);
 
-        // your freq bounds
         const float minCutoff = 200f;
         const float maxCutoff = 8000f;
 
-        // interpolate in log‑space
         float logMin = Mathf.Log(minCutoff);
         float logMax = Mathf.Log(maxCutoff);
         float logCutoff = Mathf.Lerp(logMax, logMin, t);
 
-        // back to linear Hz
         float cutoffHz = Mathf.Exp(logCutoff);
 
         mixer.SetFloat($"WarmthCutoff{layerIndex}", cutoffHz);
     }
 
 
-    /// <summary>
-    /// Set master volume (0→1 maps to –80dB→0dB).
-    /// </summary>
-    public void SetMasterVolume(float linearVolume)
+    public void SetMasterVolume(float sliderValue)
     {
-        float dB = Mathf.Lerp(-80f, 0f, Mathf.Clamp01(linearVolume));
-        mixer.SetFloat("MasterVolume", dB);
+        float t = Mathf.Clamp01(sliderValue);
+
+        float amplitude = t;
+        float db;
+        if (amplitude <= 0.0001f)
+            db = -80f;
+        else
+            db = 20f * Mathf.Log10(amplitude);
+
+        mixer.SetFloat("MasterVolume", db);
     }
 
     public void Pause()

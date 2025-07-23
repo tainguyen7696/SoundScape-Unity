@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
@@ -17,6 +18,7 @@ public class SceneItem : MonoBehaviour
     private SoundData data;
     [SerializeField] private LayoutElement layoutElement;
     [SerializeField] private Image backgroundImage;
+    [SerializeField] private TextMeshProUGUI title;
     public Action<SceneItem> OnRemove;
 
     private int layerIndex;
@@ -27,6 +29,7 @@ public class SceneItem : MonoBehaviour
         this.data = data;
         backgroundImage.type = Image.Type.Simple;
         backgroundImage.preserveAspect = true;
+        title.text = data.title;
 
         if (data.backgroundImage != null)
         {
