@@ -54,8 +54,8 @@ public class SoundSceneController : Singleton<SoundSceneController>
                         AudioManager.Instance.PlayLayer(items[i].LayerIndex, items[i].AudioClip);
                     }
 
-                    AudioManager.Instance.SetLayerVolume(items[i].LayerIndex, items[i].SoundData.settings.volume);
-                    AudioManager.Instance.SetLayerWarmth(items[i].LayerIndex, items[i].SoundData.settings.warmth);
+                    AudioManager.Instance.SetLayerVolume(items[i].LayerIndex, items[i].SoundData.volume);
+                    AudioManager.Instance.SetLayerWarmth(items[i].LayerIndex, items[i].SoundData.warmth);
                 }
             }
 

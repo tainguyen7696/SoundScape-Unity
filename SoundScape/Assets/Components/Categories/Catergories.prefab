@@ -53,8 +53,8 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
+    m_Top: 16
+    m_Bottom: 50
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
@@ -130,7 +130,6 @@ MonoBehaviour:
   prefab: {fileID: 7937564518267731355, guid: ca26a856fcdfc70449644bfd52951dd9, type: 3}
   folder: {fileID: 2705987105018741930}
   objs: []
-  scene: {fileID: 0}
 --- !u!1 &4129268437273339430
 GameObject:
   m_ObjectHideFlags: 0

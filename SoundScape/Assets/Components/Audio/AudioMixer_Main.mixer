@@ -85,15 +85,15 @@ AudioMixerController:
   - guid: b8a1b764285eb374599569c3001afdd8
     name: Layer1Volume
   - guid: 4e7171d4435712e42bf641c18cf08edc
-    name: WarmthCutoff1
+    name: WarmthCutoff0
   - guid: c4a0d573826441c4a9757a9c7c281fd5
     name: Layer2Volume
   - guid: 9740bc7d265bbc6418f3c45b6c9395b3
-    name: WarmthCutoff2
+    name: WarmthCutoff1
   - guid: bfe90ef5fdad14d448d0c442c042321a
     name: Layer3Volume
   - guid: 735020d7df7c62e46b77bf5c48885858
-    name: WarmthCutoff3
+    name: WarmthCutoff2
   - guid: 9e9e03529e0953d4d843429a23ceab7c
     name: MasterVolume
   m_AudioMixerGroupViews:
@@ -153,7 +153,7 @@ AudioMixerSnapshotController:
   m_FloatValues:
     9e9e03529e0953d4d843429a23ceab7c: -0.002441872
     b8a1b764285eb374599569c3001afdd8: 0
-    6f402c8438926a844982b070d3e32d6a: 10
+    6f402c8438926a844982b070d3e32d6a: 1
     4e7171d4435712e42bf641c18cf08edc: 22000
   m_TransitionOverrides: {}
 --- !u!244 &1579184021231797589

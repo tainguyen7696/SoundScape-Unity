@@ -73,10 +73,27 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     public void SetLayerWarmth(int layerIndex, float linearWarmth)
     {
-        if (layerIndex < 0 || layerIndex >= layerSources.Count) return;
-        float cutoffHz = Mathf.Lerp(500f, 22000f, Mathf.Clamp01(linearWarmth));
-        mixer.SetFloat("WarmthCutoff" + layerIndex, cutoffHz);
+        if (layerIndex < 0 || layerIndex >= layerSources.Count)
+            return;
+
+        // clamp input
+        float t = Mathf.Clamp01(linearWarmth);
+
+        // your freq bounds
+        const float minCutoff = 200f;
+        const float maxCutoff = 8000f;
+
+        // interpolate in log‑space
+        float logMin = Mathf.Log(minCutoff);
+        float logMax = Mathf.Log(maxCutoff);
+        float logCutoff = Mathf.Lerp(logMax, logMin, t);
+
+        // back to linear Hz
+        float cutoffHz = Mathf.Exp(logCutoff);
+
+        mixer.SetFloat($"WarmthCutoff{layerIndex}", cutoffHz);
     }
+
 
     /// <summary>
     /// Set master volume (0→1 maps to –80dB→0dB).

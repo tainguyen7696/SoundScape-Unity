@@ -25,8 +25,8 @@ public class Category : Factory<SoundCard>
         if (obj == null)
         {
             obj = Create();
-            obj.Download(data);
         }
+        obj.Download(data);
         return obj;
     }
 }

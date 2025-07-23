@@ -36,10 +36,11 @@ public class SoundDataManager : Singleton<SoundDataManager>
     const string AudioSubdir = "sound_audio";
     const string SpritesDir = "sound_sprites";
 
-    string _filePath;
-    string _spritesFolder;
-    string _audioFolder;
-    List<SoundData> _soundDatas = new List<SoundData>();
+    private string _filePath;
+    private string _spritesFolder;
+    private string _audioFolder;
+
+    private List<SoundData> _soundDatas = new List<SoundData>();
 
     public override async void Awake()
     {
@@ -97,11 +98,6 @@ public class SoundDataManager : Singleton<SoundDataManager>
             await RefreshFromRemoteAsync();
     }
 
-    public void SaveSingleCache(SoundData item)
-        => SaveSelectedCache(new[] { item });
-    public void SaveSelectedCache(IEnumerable<SoundData> subset)
-        => SaveJsonCache(subset.ToList());
-
     /// <summary>
     /// Force a fresh download from Supabase, overwriting cache.
     /// </summary>
@@ -123,7 +119,8 @@ public class SoundDataManager : Singleton<SoundDataManager>
                 category = db.Category,
                 isPremium = db.IsPremium,
                 createdAt = db.CreatedAt,
-                settings = new SoundSettings(1f, 1f),
+                volume = 1F,
+                warmth = 0F,
                 backgroundImagePath = null
             }).ToList();
 
@@ -173,10 +170,15 @@ public class SoundDataManager : Singleton<SoundDataManager>
         }
     }
 
+    public void SaveAllJsonCache()
+    {
+        SaveJsonCache(_soundDatas);
+    }
+
     /// <summary>
     /// Saves JSON only.
     /// </summary>
-    private void SaveJsonCache(List<SoundData> list)
+    public void SaveJsonCache(List<SoundData> list)
     {
         try
         {

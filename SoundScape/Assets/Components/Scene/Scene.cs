@@ -15,6 +15,11 @@ public class Scene : Singleton<Scene>
 
     public event Action<List<SceneItem>> OnSceneChanged;
 
+    private void OnDestroy()
+    {
+        DeleteAllSoundGameObjects();
+    }
+
     public void LoadPersistedScene()
     {
         foreach (var soundData in PersistentDataManager.Instance.persistentScene)
@@ -66,5 +71,14 @@ public class Scene : Singleton<Scene>
             Destroy(item.gameObject);
         }
         OnSceneChanged?.Invoke(slots);
+    }
+
+    public void DeleteAllSoundGameObjects()
+    {
+        foreach (var item in slots)
+        {
+            Destroy(item.gameObject);
+        }
+        slots.Clear();
     }
 }

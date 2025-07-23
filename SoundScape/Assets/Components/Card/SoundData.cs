@@ -4,21 +4,6 @@ using UnityEngine;
 using Newtonsoft.Json;
 
 [Serializable]
-public class SoundSettings
-{
-    [JsonProperty("volume")]
-    public float volume;
-    [JsonProperty("warmth")]
-    public float warmth;
-
-    public SoundSettings(float volume, float warmth)
-    {
-        this.volume = volume;
-        this.warmth = warmth;
-    }
-}
-
-[Serializable]
 public class SoundData
 {
     [JsonProperty("title")] public string title { get; set; }
@@ -41,5 +26,6 @@ public class SoundData
 
     [JsonProperty("createdAt")] public DateTime createdAt { get; set; }
 
-    [JsonProperty("SoundSettings")] public SoundSettings settings;
+    [JsonProperty("volume")] public float volume { get; set; }
+    [JsonProperty("warmth")] public float warmth { get; set; }
 }

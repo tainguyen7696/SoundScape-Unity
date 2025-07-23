@@ -23,11 +23,15 @@ public class PersistentDataManager : Singleton<PersistentDataManager>
     public override void Awake()
     {
         base.Awake();
-        // load from PlayerPrefs
+
+        SoundDataManager.Instance.OnSoundDataJsonLoaded += Instance_OnSoundDataJsonLoaded;
+        Scene.Instance.OnSceneChanged += Instance_OnSceneChanged;
+    }
+
+    private void Instance_OnSoundDataJsonLoaded(List<SoundData> obj)
+    {
         LoadScene();
         LoadFavorites();
-
-        Scene.Instance.OnSceneChanged += Instance_OnSceneChanged;
     }
 
     private void Instance_OnSceneChanged(List<SceneItem> sceneItems)
@@ -46,7 +50,7 @@ public class PersistentDataManager : Singleton<PersistentDataManager>
 
     private void LoadScene()
     {
-        var json = PlayerPrefs.GetString(SceneKey, null);
+        string json = PlayerPrefs.GetString(SceneKey, null);
         if (string.IsNullOrEmpty(json))
         {
             Debug.Log("🔄 No saved scene data found.");
@@ -55,16 +59,30 @@ public class PersistentDataManager : Singleton<PersistentDataManager>
 
         try
         {
-            persistentScene = JsonConvert.DeserializeObject<List<SoundData>>(json)
-                    ?? new List<SoundData>();
-            Debug.Log($"✅ Loaded {persistentScene.Count} sounds from cache.");
+            // 1) Deserialize into a list of “stubs”
+            var savedList = JsonConvert.DeserializeObject<List<SoundData>>(json)
+                                ?? new List<SoundData>();
+
+            // 2) For each stub, try to find the real instance in SoundDataManager by title
+            persistentScene = savedList
+                .Select(stub =>
+                    SoundDataManager.Instance.SoundDatas
+                        .FirstOrDefault(x => x.title == stub.title)
+                    // if no match, fall back to the stub itself
+                    ?? stub
+                )
+                .ToList();
+
+            // 3) Hand it off to your scene loader
             Scene.Instance.LoadPersistedScene();
         }
         catch (Exception ex)
         {
+            Debug.LogError($"Failed to load scene data: {ex}");
             persistentScene = new List<SoundData>();
         }
     }
+
 
     private void SaveScene()
     {
