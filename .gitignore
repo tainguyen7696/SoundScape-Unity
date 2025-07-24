@@ -3,6 +3,8 @@
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
 .utmp/
+fastlane/*
+bin/*
 /SoundScape/[Ll]ibrary/
 /SoundScape/[Tt]emp/
 /SoundScape/[Oo]bj/
