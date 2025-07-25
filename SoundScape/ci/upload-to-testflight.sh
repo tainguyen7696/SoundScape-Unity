@@ -2,13 +2,24 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-echo "=== Xcode Archive Log ==="
-WORKSPACE_DIR="${1:-}"
-if [[ -f "$WORKSPACE_DIR/Library/Logs/gym/SoundScape-Unity-iPhone.log" ]]; then
-  cat "$WORKSPACE_DIR/Library/Logs/gym/SoundScape-Unity-iPhone.log"
-else
-  echo "No gym log found in $WORKSPACE_DIR/Library/Logs/gym"
-fi
+WORKSPACE="$1"
+ARTIFACT_DIR="${2:-}"
+
+# build‑root is two levels up from either workspace or artifact_dir
+BUILD_ROOT="$(dirname "$(dirname "${WORKSPACE}")")"
+
+# possible locations of your gym log
+for LOG in \
+    "$WORKSPACE/Library/Logs/gym/SoundScape-Unity-iPhone.log" \
+    "$BUILD_ROOT/Library/Logs/gym/SoundScape-Unity-iPhone.log"
+do
+  if [[ -f "$LOG" ]]; then
+    echo "=== Found gym log: $LOG ==="
+    cat "$LOG"
+    break
+  fi
+done || echo "❌ No gym log found at expected paths"
+
 
 
 # 1) Where this script lives

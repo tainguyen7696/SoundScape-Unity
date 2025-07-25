@@ -1,17 +1,13 @@
-using UnityEngine;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
-public class SilentModeOverride : MonoBehaviour
+class SilentModeOverride : MonoBehaviour
 {
-#if UNITY_IOS && !UNITY_EDITOR
-    [DllImport("__Internal")]
-    private static extern void _OverrideAudioSessionToPlayback();
-#endif
+    [DllImport("__Internal", EntryPoint = "SilentModeOverride_Awake")]
+    static extern void _NativeAwake();
 
     void Awake()
     {
-#if UNITY_IOS && !UNITY_EDITOR
-        _OverrideAudioSessionToPlayback();
-#endif
+        _NativeAwake();
     }
 }
