@@ -9,8 +9,7 @@ public class IAPManager : MonoBehaviour, IStoreListener
     private static IExtensionProvider StoreExtensionProvider;
 
     // TODO: Replace with your actual product IDs
-    public const string PRODUCT_PREMIUM = "com.yourcompany.soundscape.premium";
-    public const string PRODUCT_NO_ADS = "com.yourcompany.soundscape.noads";
+    public const string PRODUCT_PREMIUM = "com.tsglobal.soundscape.premium";
 
     void Awake()
     {
@@ -25,10 +24,6 @@ public class IAPManager : MonoBehaviour, IStoreListener
 
         // Add non-consumable products
         builder.AddProduct(PRODUCT_PREMIUM, ProductType.NonConsumable);
-        builder.AddProduct(PRODUCT_NO_ADS, ProductType.NonConsumable);
-
-        // (Optionally) Add consumables:
-        // builder.AddProduct("com.yourcompany.soundscape.coins100", ProductType.Consumable);
 
         UnityPurchasing.Initialize(this, builder);
     }
@@ -56,10 +51,6 @@ public class IAPManager : MonoBehaviour, IStoreListener
             case PRODUCT_PREMIUM:
                 GrantPremiumFeatures();
                 break;
-            case PRODUCT_NO_ADS:
-                RemoveAds();
-                break;
-            // case "com.yourcompany.soundscape.coins100": AddCoins(100); break;
             default:
                 Debug.LogWarning($"Unknown product: {args.purchasedProduct.definition.id}");
                 break;
@@ -81,11 +72,6 @@ public class IAPManager : MonoBehaviour, IStoreListener
     public void BuyPremium()
     {
         BuyProductID(PRODUCT_PREMIUM);
-    }
-
-    public void BuyNoAds()
-    {
-        BuyProductID(PRODUCT_NO_ADS);
     }
 
     private void BuyProductID(string productId)
