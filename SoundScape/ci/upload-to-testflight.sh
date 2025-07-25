@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+echo "=== upload-to-testflight.sh version: $(date '+%Y-%m-%d %H:%M:%S') ==="
+head -n1 "$0"
+
 set -euo pipefail
 IFS=$'\n\t'
 
