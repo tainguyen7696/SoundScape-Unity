@@ -5,22 +5,14 @@ IFS=$'\n\t'
 WORKSPACE="$1"
 ARTIFACT_DIR="${2:-}"
 
-# build‑root is two levels up from either workspace or artifact_dir
-BUILD_ROOT="$(dirname "$(dirname "${WORKSPACE}")")"
-
-# possible locations of your gym log
-for LOG in \
-    "$WORKSPACE/Library/Logs/gym/SoundScape-Unity-iPhone.log" \
-    "$BUILD_ROOT/Library/Logs/gym/SoundScape-Unity-iPhone.log"
-do
-  if [[ -f "$LOG" ]]; then
-    echo "=== Found gym log: $LOG ==="
-    cat "$LOG"
-    break
-  fi
-done || echo "❌ No gym log found at expected paths"
-
-
+# 0️⃣ Dump out the gym log (if it exists)
+LOG="$BUILD_PATH/Library/Logs/gym/SoundScape-Unity-iPhone.log"
+echo "=== Xcode Archive Log ($LOG) ==="
+if [[ -f "$LOG" ]]; then
+  cat "$LOG"
+else
+  echo "No gym log found at $LOG"
+fi
 
 # 1) Where this script lives
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
