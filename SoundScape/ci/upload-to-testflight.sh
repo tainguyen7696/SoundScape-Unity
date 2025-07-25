@@ -3,7 +3,13 @@ set -euo pipefail
 IFS=$'\n\t'
 
 echo "=== Xcode Archive Log ==="
-cat /BUILD_PATH/Library/Logs/gym/SoundScape-Unity-iPhone.log || echo "No gym log found"
+WORKSPACE_DIR="${1:-}"
+if [[ -f "$WORKSPACE_DIR/Library/Logs/gym/SoundScape-Unity-iPhone.log" ]]; then
+  cat "$WORKSPACE_DIR/Library/Logs/gym/SoundScape-Unity-iPhone.log"
+else
+  echo "No gym log found in $WORKSPACE_DIR/Library/Logs/gym"
+fi
+
 
 # 1) Where this script lives
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
