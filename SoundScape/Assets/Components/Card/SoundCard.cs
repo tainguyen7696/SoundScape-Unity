@@ -24,6 +24,8 @@ public class SoundCard : MonoBehaviour
     [SerializeField] private Image isPremiumIcon;
     [SerializeField] private Image outline;
     [SerializeField] private Toggle favoriteToggle;
+    [SerializeField] private Toggle toggle;
+    [SerializeField] private Button addButton;
 
     public Action<bool> OnFavoritesChanged;
     public Action<SoundData> OnAdd;
@@ -33,15 +35,30 @@ public class SoundCard : MonoBehaviour
     private bool isOn;
     private bool isFavorite;
 
+    void OnEnable()
+    {
+        IAPManager.OnPremiumUnlocked += OnPremiumUnlocked;
+    }
+
+    void OnDisable()
+    {
+        IAPManager.OnPremiumUnlocked -= OnPremiumUnlocked;
+    }
+
+    private void OnPremiumUnlocked()
+    {
+        ValidateIsUserPremium();
+    }
+
     public void Download(SoundData data)
     {
         this.data = data;
         name = data.title;
         title.text = data.title;
 
-        isPremiumIcon.gameObject.SetActive(data.isPremium);
+        ValidateIsUserPremium();
 
-        if(data.backgroundImage != null)
+        if (data.backgroundImage != null)
         {
             backgroundImage.overrideSprite = data.backgroundImage;
             backgroundImage.enabled = true;
@@ -64,6 +81,17 @@ public class SoundCard : MonoBehaviour
         this.isFavorite = isFavorited;
     }
 
+    public void ValidateIsUserPremium()
+    {
+        bool isPremiumUser = IAPManager.Instance.IsPremiumUser();
+        bool isPremiumContent = data.isPremium;
+
+        isPremiumIcon.gameObject.SetActive(isPremiumContent && !isPremiumUser);
+        toggle.interactable = !isPremiumContent || isPremiumUser;
+        addButton.interactable = !isPremiumContent || isPremiumUser;
+        favoriteToggle.interactable = !isPremiumContent || isPremiumUser;
+    }
+
     public void HandleOnFavoritesChange(bool isOn)
     {
         OnFavoritesChanged?.Invoke(isOn);
@@ -81,5 +109,9 @@ public class SoundCard : MonoBehaviour
     {
         OnToggle?.Invoke(data);
         this.isOn = isOn;
+    }
+    public void HandleLock()
+    {
+        SettingsPullup.Instance.SetActive(true);
     }
 }

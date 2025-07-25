@@ -1,20 +1,40 @@
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.Extension;
-using System;
+using UnityEngine.Purchasing.Security;
 
 public class IAPManager : MonoBehaviour, IStoreListener
 {
-    private static IStoreController StoreController;
-    private static IExtensionProvider StoreExtensionProvider;
+    public static IAPManager Instance;
 
-    // TODO: Replace with your actual product IDs
-    public const string PRODUCT_PREMIUM = "com.tsglobal.soundscape.premium";
+    private static IStoreController storeController;
+    private static IExtensionProvider storeExtensionProvider;
+
+    public const string monthlyPremium = "monthly_premium";
+    public const string yearlyPremium = "yearly_premium";
+
+    private bool initialized = false;
+
+    public static event Action OnPremiumUnlocked;
 
     void Awake()
     {
-        // If not already initialized, initialize Unity IAP
-        if (StoreController == null)
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
+    void Start()
+    {
+        if (storeController == null)
             InitializePurchasing();
     }
 
@@ -22,121 +42,170 @@ public class IAPManager : MonoBehaviour, IStoreListener
     {
         var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
-        // Add non-consumable products
-        builder.AddProduct(PRODUCT_PREMIUM, ProductType.NonConsumable);
+        builder.AddProduct(monthlyPremium, ProductType.Subscription);
+        builder.AddProduct(yearlyPremium, ProductType.Subscription);
 
         UnityPurchasing.Initialize(this, builder);
     }
 
-    #region IStoreListener
+    public void BuyMonthly()
+    {
+        BuyProductID(monthlyPremium);
+    }
+
+    public void BuyYearly()
+    {
+        BuyProductID(yearlyPremium);
+    }
+
+    private void BuyProductID(string productId)
+    {
+        if (storeController == null)
+        {
+            Debug.LogWarning("Store not initialized.");
+            return;
+        }
+
+        Product product = storeController.products.WithID(productId);
+        if (product != null && product.availableToPurchase)
+        {
+            Debug.Log("🛒 Purchasing: " + productId);
+            storeController.InitiatePurchase(product);
+        }
+        else
+        {
+            Debug.LogWarning("Product not found or unavailable: " + productId);
+        }
+    }
 
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
-        Debug.Log("IAP Initialized");
-        StoreController = controller;
-        StoreExtensionProvider = extensions;
+        Debug.Log("✅ IAP Initialized");
+        storeController = controller;
+        storeExtensionProvider = extensions;
+        initialized = true;
+
+        // Validate subscription in background
+        ValidateAllReceipts();
     }
 
     public void OnInitializeFailed(InitializationFailureReason error)
     {
-        Debug.LogError($"IAP Init Failed: {error}");
+        Debug.LogWarning("❌ IAP Init failed: " + error);
     }
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
-        Debug.Log($"Purchase OK: {args.purchasedProduct.definition.id}");
-
-        switch (args.purchasedProduct.definition.id)
+        if (args.purchasedProduct.definition.id == monthlyPremium ||
+            args.purchasedProduct.definition.id == yearlyPremium)
         {
-            case PRODUCT_PREMIUM:
-                GrantPremiumFeatures();
-                break;
-            default:
-                Debug.LogWarning($"Unknown product: {args.purchasedProduct.definition.id}");
-                break;
+            Debug.Log("✅ Subscription purchased: " + args.purchasedProduct.definition.id);
+            UnlockPremium();
+        }
+        else
+        {
+            Debug.LogWarning("❓ Unknown product: " + args.purchasedProduct.definition.id);
         }
 
-        // Return Complete if success; Pending if you use server-side receipts
         return PurchaseProcessingResult.Complete;
     }
 
     public void OnPurchaseFailed(Product product, PurchaseFailureReason reason)
     {
-        Debug.LogError($"Purchase FAILED: {product.definition.id}, Reason: {reason}");
+        Debug.LogWarning($"❌ Purchase failed: {product.definition.id} | Reason: {reason}");
     }
 
-    #endregion
-
-    #region Public Purchase Methods
-
-    public void BuyPremium()
+    // 🔓 Save premium access locally
+    private void UnlockPremium()
     {
-        BuyProductID(PRODUCT_PREMIUM);
+        PlayerPrefs.SetInt("IsPremium", 1);
+        PlayerPrefs.Save();
+        OnPremiumUnlocked?.Invoke();
+        Debug.Log("🚀 Premium unlocked");
     }
 
-    private void BuyProductID(string productId)
+    // 🔒 Revoke premium locally
+    private void RevokePremium()
     {
-        if (StoreController == null)
-        {
-            Debug.LogError("IAP not initialized.");
-            return;
-        }
-
-        Product product = StoreController.products.WithID(productId);
-
-        if (product != null && product.availableToPurchase)
-        {
-            Debug.Log($"Purchasing {productId}...");
-            StoreController.InitiatePurchase(product);
-        }
-        else
-        {
-            Debug.LogError($"Product not found or not available: {productId}");
-        }
+        PlayerPrefs.SetInt("IsPremium", 0);
+        PlayerPrefs.Save();
+        Debug.Log("🚫 Premium revoked (expired)");
     }
 
-    /// <summary>
-    /// For iOS � restores previous purchases (non-consumables).
-    /// </summary>
+    // 🔍 Fast check for UI gating
+    public bool IsPremiumUser()
+    {
+        return PlayerPrefs.GetInt("IsPremium", 0) == 1;
+    }
+
+    // 🔄 Restore (iOS)
     public void RestorePurchases()
     {
-        if (StoreController == null || StoreExtensionProvider == null)
+        if (Application.platform == RuntimePlatform.IPhonePlayer ||
+            Application.platform == RuntimePlatform.OSXPlayer)
         {
-            Debug.LogError("IAP not initialized.");
-            return;
+            var apple = storeExtensionProvider?.GetExtension<IAppleExtensions>();
+            apple?.RestoreTransactions(result =>
+            {
+                Debug.Log("🔁 Restore complete: " + result);
+                if (result) ValidateAllReceipts();
+            });
         }
+    }
 
-#if UNITY_IOS
-        var apple = StoreExtensionProvider.GetExtension<IAppleExtensions>();
-        apple.RestoreTransactions(result =>
+    // ✅ Check all receipts for active subscriptions
+    private void ValidateAllReceipts()
+    {
+        if (!initialized || storeController == null) return;
+
+        foreach (var product in storeController.products.all)
         {
-            Debug.Log($"RestorePurchases continuing: {result}. If no further messages, no purchases to restore.");
-        });
+            if (product != null && product.hasReceipt)
+            {
+                ValidateReceipt(product);
+            }
+        }
+    }
+
+    private void ValidateReceipt(Product product)
+    {
+        try
+        {
+            var validator = new CrossPlatformValidator(null, AppleTangle.Data(), Application.identifier);
+            var result = validator.Validate(product.receipt);
+
+            foreach (IPurchaseReceipt receipt in result)
+            {
+#if UNITY_IOS
+                if (receipt is AppleInAppPurchaseReceipt apple)
+                {
+                    Debug.Log("📄 Apple receipt: " + apple.productID);
+
+                    if (apple.subscriptionExpirationDate > DateTime.UtcNow)
+                    {
+                        UnlockPremium();
+                        Debug.Log("✅ iOS subscription active until " + apple.subscriptionExpirationDate);
+                    }
+                    else
+                    {
+                        RevokePremium();
+                        Debug.Log("❌ iOS subscription expired: " + apple.subscriptionExpirationDate);
+                    }
+                }
 #else
-        Debug.Log("RestorePurchases is only supported on iOS.");
+                // For Android – always assume valid for now (until server validation is added)
+                UnlockPremium();
 #endif
-    }
-
-    #endregion
-
-    #region Grant Content
-
-    private void GrantPremiumFeatures()
-    {
-        Debug.Log("Granting premium features!");
-        // e.g. PlayerPrefs.SetInt("isPremium", 1);
-    }
-
-    private void RemoveAds()
-    {
-        Debug.Log("Removing ads!");
-        // e.g. PlayerPrefs.SetInt("noAds", 1);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("❌ Receipt validation error: " + e.Message);
+        }
     }
 
     public void OnInitializeFailed(InitializationFailureReason error, string message)
     {
         throw new NotImplementedException();
     }
-
-    #endregion
 }
