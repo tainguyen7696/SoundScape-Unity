@@ -1,13 +1,19 @@
-using System.Runtime.InteropServices;
 using UnityEngine;
+using System.Runtime.InteropServices;
 
-class SilentModeOverride : MonoBehaviour
+public class SilentModeOverride : MonoBehaviour
 {
-    [DllImport("__Internal", EntryPoint = "SilentModeOverride_Awake")]
-    static extern void _NativeAwake();
+#if UNITY_IOS && !UNITY_EDITOR
+    // Only DllImport when running on an actual iOS build
+    [DllImport("__Internal")]
+    private static extern void SilentModeOverride_Awake();
+#else
+    // Stub for Editor & other platforms
+    private static void SilentModeOverride_Awake() { }
+#endif
 
     void Awake()
     {
-        _NativeAwake();
+        SilentModeOverride_Awake();
     }
 }
