@@ -3,12 +3,22 @@
     "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <!-- Tell Apple you use non‑exempt, standard crypto -->
+    <!-- Export compliance: you use non‑exempt AES encryption -->
     <key>ITSAppUsesNonExemptEncryption</key>
     <true/>
     <key>com.apple.developer.ios.export-compliance.encryption-type</key>
-    <!-- List your algorithms here -->
     <string>AES</string>
-    <!-- Unity will merge this into the final Xcode Info.plist -->
+
+    <!-- Allow audio to continue in background -->
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>audio</string>
+    </array>
+
+    <!-- Override silent switch so your app still plays sound -->
+    <key>AVAudioSessionCategory</key>
+    <string>AVAudioSessionCategoryPlayback</string>
+    <key>AVAudioSessionMode</key>
+    <string>AVAudioSessionModeDefault</string>
   </dict>
 </plist>
