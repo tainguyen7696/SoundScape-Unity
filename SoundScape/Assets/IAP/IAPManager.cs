@@ -34,18 +34,47 @@ public class IAPManager : MonoBehaviour, IStoreListener
 
     void Start()
     {
+        Debug_ResetIAP();
         if (storeController == null)
             InitializePurchasing();
     }
 
     public void InitializePurchasing()
     {
-        var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
+        var module = StandardPurchasingModule.Instance();
+#if UNITY_EDITOR
+        // Simulate the real store UI in the Editor
+        module.useFakeStoreUIMode = FakeStoreUIMode.StandardUser;
+#endif
 
+        var builder = ConfigurationBuilder.Instance(module);
         builder.AddProduct(monthlyPremium, ProductType.Subscription);
         builder.AddProduct(yearlyPremium, ProductType.Subscription);
 
         UnityPurchasing.Initialize(this, builder);
+    }
+    /// <summary>
+    /// DEBUG: Removes premium and clears IAP state so you can re‑test purchases in the Editor.
+    /// </summary>
+
+    [ContextMenu("🧪 Reset IAP (Editor Only)")]
+    public void Debug_ResetIAP()
+    {
+#if UNITY_EDITOR
+        // 1) Clear your premium flag
+        PlayerPrefs.DeleteKey("IsPremium");
+        PlayerPrefs.Save();
+        Debug.Log("⚙️ PlayerPrefs ‘IsPremium’ cleared.");
+
+        // 2) Reset our in‑memory state
+        initialized = false;
+        storeController = null;
+        storeExtensionProvider = null;
+
+        // 3) (Re‑)initialize IAP so fake receipts are dropped
+        InitializePurchasing();
+        Debug.Log("⚙️ IAP re‑initialized.");
+#endif
     }
 
     public void BuyMonthly()
