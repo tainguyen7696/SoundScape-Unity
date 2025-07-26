@@ -6,12 +6,16 @@ public class AudioSessionManager : MonoBehaviour
 #if UNITY_IOS && !UNITY_EDITOR
     [DllImport("__Internal")]
     private static extern void _SetAudioSessionPlayback();
+
+    [DllImport("__Internal")]
+    private static extern void _SetAudioSessionBackground();
 #endif
 
     void Awake()
     {
 #if UNITY_IOS && !UNITY_EDITOR
         _SetAudioSessionPlayback();
+        _SetAudioSessionBackground();
 #endif
     }
 }
