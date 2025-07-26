@@ -13,6 +13,7 @@ public class AudioSessionManager : MonoBehaviour
 
     void Awake()
     {
+        Application.runInBackground = true;
 #if UNITY_IOS && !UNITY_EDITOR
         _SetAudioSessionPlayback();
         _SetAudioSessionBackground();

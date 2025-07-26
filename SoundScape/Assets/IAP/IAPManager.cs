@@ -114,6 +114,14 @@ public class IAPManager : MonoBehaviour, IStoreListener
         storeExtensionProvider = extensions;
         initialized = true;
 
+        foreach (var p in controller.products.all)
+        {
+            Debug.Log(
+              $"IAP Loaded: id={p.definition.id}  " +
+              $"availableToPurchase={p.availableToPurchase}"
+            );
+        }
+
         // Validate subscription in background
         ValidateAllReceipts();
     }

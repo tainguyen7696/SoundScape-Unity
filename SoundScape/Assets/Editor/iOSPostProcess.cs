@@ -1,43 +1,36 @@
 #if UNITY_IOS
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
+using UnityEngine;
 using System.IO;
+using System.Linq;
 
 public static class iOSPostProcess
 {
-    // This method is called by Unity after the Xcode project is generated
     [PostProcessBuild]
-    public static void OnPostProcessBuild(BuildTarget buildTarget, string pathToBuiltProject)
+    public static void OnPostProcessBuild(BuildTarget target, string path)
     {
-        if (buildTarget != BuildTarget.iOS) return;
+        if (target != BuildTarget.iOS) return;
+        var plistPath = Path.Combine(path, "Info.plist");
+        var doc = new PlistDocument();
+        doc.ReadFromFile(plistPath);
 
-        // Locate the Info.plist file
-        string plistPath = Path.Combine(pathToBuiltProject, "Info.plist");
-        var pl = new PlistDocument();
-        pl.ReadFromFile(plistPath);
+        // create or fetch the array
+        PlistElementArray modes = doc.root.values.TryGetValue("UIBackgroundModes", out var existing)
+            && existing is PlistElementArray arr ? arr
+            : doc.root.CreateArray("UIBackgroundModes");
 
-        // Add or merge UIBackgroundModes → audio
-        var root = pl.root;
-        PlistElement existing = root.values.ContainsKey("UIBackgroundModes")
-            ? root["UIBackgroundModes"]
-            : null;
+        // add “audio” if it’s missing
+        if (!modes.values.Any(e => e.AsString() == "audio"))
+            modes.AddString("audio");
 
-        PlistElementArray bgModes = existing is PlistElementArray arr
-            ? arr
-            : root.CreateArray("UIBackgroundModes");
+        // WRITE BACK
+        File.WriteAllText(plistPath, doc.WriteToString());
 
-        // Only add if not already present
-        bool hasAudio = false;
-        foreach (var e in bgModes.values)
-            if (e.AsString() == "audio") { hasAudio = true; break; }
-        if (!hasAudio)
-            bgModes.AddString("audio");
-
-        // Write changes back to Info.plist
-        File.WriteAllText(plistPath, pl.WriteToString());
-        Debug.Log("✅ Injected UIBackgroundModes: audio into Info.plist");
+        // LOG what’s in there now
+        var list = modes.values.Select(e => e.AsString()).ToArray();
+        Debug.Log($"✅ Info.plist UIBackgroundModes entries: {string.Join(", ", list)}");
     }
 }
 #endif
