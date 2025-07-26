@@ -1,23 +1,25 @@
 // AudioBackground.mm
 #import <AVFoundation/AVFoundation.h>
+#import <Foundation/Foundation.h>
 
 extern "C" {
     void _SetAudioSessionBackground()
     {
+        NSLog(@"[AudioSession] → Setting background audio");
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSError *error = nil;
 
-        // .playback allows background audio
+        // playback category allows background audio + mixes with others
         [session setCategory:AVAudioSessionCategoryPlayback
-                 withOptions:0
+                 withOptions:AVAudioSessionCategoryOptionMixWithOthers
                        error:&error];
         if (error) {
-            NSLog(@"⚠️ Error setting AVAudioSession category: %@", error);
+            NSLog(@"[AudioSession] ⚠️ setCategory error: %@", error);
         }
 
         [session setActive:YES error:&error];
         if (error) {
-            NSLog(@"⚠️ Error activating AVAudioSession: %@", error);
+            NSLog(@"[AudioSession] ⚠️ setActive error: %@", error);
         }
     }
 }

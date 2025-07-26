@@ -1655,6 +1655,7 @@ GameObject:
   - component: {fileID: 557079208}
   - component: {fileID: 557079207}
   - component: {fileID: 557079206}
+  - component: {fileID: 557079209}
   m_Layer: 5
   m_Name: Button (1)
   m_TagString: Untagged
@@ -1701,7 +1702,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -1725,19 +1726,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 557079207}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1210533856}
-        m_TargetAssemblyTypeName: IAPManager, Assembly-CSharp
-        m_MethodName: BuyYearly
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &557079207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1776,6 +1765,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 557079204}
   m_CullTransparentMesh: 1
+--- !u!114 &557079209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 557079204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b79b5624d944058bd39aad2b90fb275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  productId: yearly
+  buttonType: 0
+  consumePurchase: 1
+  onTransactionsRestored:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseFailed:
+    m_PersistentCalls:
+      m_Calls: []
+  onProductFetched:
+    m_PersistentCalls:
+      m_Calls: []
+  button: {fileID: 557079206}
 --- !u!114 &558215315 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2324232635488753699, guid: 1acf589ab4335524daaee6adcc947e23, type: 3}
@@ -2375,6 +2392,7 @@ GameObject:
   - component: {fileID: 1152817460}
   - component: {fileID: 1152817459}
   - component: {fileID: 1152817458}
+  - component: {fileID: 1152817461}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -2421,7 +2439,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -2445,19 +2463,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1152817459}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1210533856}
-        m_TargetAssemblyTypeName: IAPManager, Assembly-CSharp
-        m_MethodName: BuyMonthly
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1152817459
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2496,6 +2502,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1152817456}
   m_CullTransparentMesh: 1
+--- !u!114 &1152817461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152817456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b79b5624d944058bd39aad2b90fb275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  productId: monthly
+  buttonType: 0
+  consumePurchase: 1
+  onTransactionsRestored:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseFailed:
+    m_PersistentCalls:
+      m_Calls: []
+  onProductFetched:
+    m_PersistentCalls:
+      m_Calls: []
+  button: {fileID: 1152817458}
 --- !u!1001 &1207847150
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2667,6 +2701,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1210533857}
   - component: {fileID: 1210533856}
+  - component: {fileID: 1210533858}
   m_Layer: 0
   m_Name: IAPManager
   m_TagString: Untagged
@@ -2701,6 +2736,44 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1210533858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210533855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f7dd963c1a8b427b96975fa211478a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  consumePurchase: 1
+  dontDestroyOnLoad: 1
+  onProductsFetched:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseComplete:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1210533856}
+        m_TargetAssemblyTypeName: IAPManager, Assembly-CSharp
+        m_MethodName: Purchased
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPurchaseFailed:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseDetailedFailedEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1210704700
 GameObject:
   m_ObjectHideFlags: 0
@@ -3302,6 +3375,7 @@ GameObject:
   - component: {fileID: 1529135807}
   - component: {fileID: 1529135806}
   - component: {fileID: 1529135805}
+  - component: {fileID: 1529135808}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -3348,7 +3422,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -3372,19 +3446,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1529135806}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1210533856}
-        m_TargetAssemblyTypeName: IAPManager, Assembly-CSharp
-        m_MethodName: RestorePurchases
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1529135806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3423,6 +3485,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1529135803}
   m_CullTransparentMesh: 1
+--- !u!114 &1529135808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1529135803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b79b5624d944058bd39aad2b90fb275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  productId: yearly
+  buttonType: 1
+  consumePurchase: 1
+  onTransactionsRestored:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  onPurchaseFailed:
+    m_PersistentCalls:
+      m_Calls: []
+  onProductFetched:
+    m_PersistentCalls:
+      m_Calls: []
+  button: {fileID: 1529135805}
 --- !u!114 &1532233622 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2708700546995649785, guid: 919cd2a43a7910349958d1ca575d469f, type: 3}
@@ -5164,27 +5254,27 @@ PrefabInstance:
       objectReference: {fileID: 558215315}
     - target: {fileID: 6615759281676896994, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6615759281676896994, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6615759281676896994, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 358.1362
       objectReference: {fileID: 0}
     - target: {fileID: 6615759281676896994, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 6615759281676896994, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 179.0681
       objectReference: {fileID: 0}
     - target: {fileID: 6615759281676896994, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -16
       objectReference: {fileID: 0}
     - target: {fileID: 8389389068011960791, guid: 3ee42e98e8c0ffa468394915a0c0b093, type: 3}
       propertyPath: m_LocalPosition.x

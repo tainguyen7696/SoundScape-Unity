@@ -87,6 +87,18 @@ public class IAPManager : MonoBehaviour, IStoreListener
         BuyProductID(yearlyPremium);
     }
 
+    public void Purchased(Product product)
+    {
+        if (product.definition.id.Equals("monthly"))
+        {
+            BuyMonthly();
+        }
+        else if(product.definition.id.Equals("yearly"))
+        {
+            BuyYearly();
+        }
+    }
+
     private void BuyProductID(string productId)
     {
         if (storeController == null)
