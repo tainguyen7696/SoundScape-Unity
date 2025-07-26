@@ -11,8 +11,8 @@ public class IAPManager : MonoBehaviour, IStoreListener
     private static IStoreController storeController;
     private static IExtensionProvider storeExtensionProvider;
 
-    public const string monthlyPremium = "monthly_premium";
-    public const string yearlyPremium = "yearly_premium";
+    public const string monthlyPremium = "monthly";
+    public const string yearlyPremium = "yearly";
 
     private bool initialized = false;
 

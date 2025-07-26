@@ -17,6 +17,12 @@ public class SoundSceneController : Singleton<SoundSceneController>
     {
         base.Awake();
         Scene.Instance.OnSceneChanged += HandleSceneChanged;
+        TimerSettingsPullup.Instance.OnTimerComplete += Instance_OnTimerComplete;
+    }
+
+    private void Instance_OnTimerComplete()
+    {
+        playPauseToggle.isOn = false;
     }
 
     private void OnDestroy()
