@@ -9,13 +9,11 @@ IFS=$'\n\t'
 WORKSPACE="$1"
 ARTIFACT_DIR="${2:-}"
 
-# 0️⃣ Dump out the gym log (if it exists)
-LOG="$BUILD_PATH/Library/Logs/gym/SoundScape-Unity-iPhone.log"
-echo "=== Xcode Archive Log ($LOG) ==="
+# 0️⃣ Only dump the gym log if it exists
+LOG="$WORKSPACE/Library/Logs/gym/SoundScape-Unity-iPhone.log"
 if [[ -f "$LOG" ]]; then
+  echo "=== Xcode Archive Log ($LOG) ==="
   cat "$LOG"
-else
-  echo "No gym log found at $LOG"
 fi
 
 # 1) Where this script lives
@@ -23,7 +21,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "🔍 Script directory: $SCRIPT_DIR"
 
 # 2) Artifact directory passed in by Cloud Build
-ARTIFACT_DIR="${2:-}"
 if [[ -z "$ARTIFACT_DIR" ]]; then
   echo "❌ No artifact directory provided"
   exit 1
